@@ -571,18 +571,19 @@ public class ServerCore {
 	}
 
 	public static BlockPos preBlockStateFetchOnFrostwalk(BlockPos pos){
-		if(FROSTWALK_ENTITY == null || FROSTWALK_LEVEL.getServer() == null || !FROSTWALK_LEVEL.getServer().isSameThread())
+		Level frostwalkLevel = FROSTWALK_LEVEL;
+		if(frostwalkLevel == null || frostwalkLevel.getServer() == null || !frostwalkLevel.getServer().isSameThread())
 			return pos;
-		BlockState actualState = FROSTWALK_LEVEL.getBlockState(pos);
+		BlockState actualState = frostwalkLevel.getBlockState(pos);
 		if(actualState.getMaterial() != Material.WATER)
 			return pos;
 		FROSTWALK_BLOCKPOS.set(pos);
 		IServerData<IServerClaimsManager<IPlayerChunkClaim, IServerPlayerClaimInfo<IPlayerDimensionClaims<IPlayerClaimPosList>>, IServerDimensionClaimsManager<IServerRegionClaims>>, IServerParty<IPartyMember, IPartyPlayerInfo, IPartyAlly>> serverData = ServerData.from(FROSTWALK_LEVEL.getServer());
 		if(serverData == null)
 			return pos;
-		ServerLevel serverLevel = ServerLevelHelper.getServerLevel(FROSTWALK_LEVEL);
+		ServerLevel serverLevel = ServerLevelHelper.getServerLevel(frostwalkLevel);
 		if(serverData.getChunkProtection().onFrostWalk(serverData, FROSTWALK_ENTITY, serverLevel, FROSTWALK_BLOCKPOS))
-			return FROSTWALK_BLOCKPOS.setY(FROSTWALK_LEVEL.getMaxBuildHeight());//won't be water here lol
+			return FROSTWALK_BLOCKPOS.setY(frostwalkLevel.getMaxBuildHeight());//won't be water here lol
 		return pos;
 	}
 
