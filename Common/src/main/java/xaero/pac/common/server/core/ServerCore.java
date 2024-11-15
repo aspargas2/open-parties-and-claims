@@ -131,10 +131,12 @@ public class ServerCore {
 			return true;
 		if(level.getServer() == null)
 			return true;
+		ServerLevel serverLevel = ServerLevelHelper.getServerLevel(level);
+		if(serverLevel == null)
+			return true;
 		IServerData<IServerClaimsManager<IPlayerChunkClaim, IServerPlayerClaimInfo<IPlayerDimensionClaims<IPlayerClaimPosList>>, IServerDimensionClaimsManager<IServerRegionClaims>>, IServerParty<IPartyMember, IPartyPlayerInfo, IPartyAlly>> serverData = ServerData.from(level.getServer());
 		if(serverData == null)
 			return true;
-		ServerLevel serverLevel = ServerLevelHelper.getServerLevel(level);
 		boolean shouldProtect = serverData.getChunkProtection().onFireSpread(serverData, serverLevel, pos);
 		return !shouldProtect;
 	}
@@ -142,10 +144,12 @@ public class ServerCore {
 	public static boolean mayUseItemAt(Player player, BlockPos pos, Direction direction, ItemStack itemStack){
 		if(player.getServer() == null)
 			return true;
+		ServerLevel serverLevel = ServerLevelHelper.getServerLevel(player.getLevel());
+		if(serverLevel == null)
+			return true;
 		IServerData<IServerClaimsManager<IPlayerChunkClaim, IServerPlayerClaimInfo<IPlayerDimensionClaims<IPlayerClaimPosList>>, IServerDimensionClaimsManager<IServerRegionClaims>>, IServerParty<IPartyMember, IPartyPlayerInfo, IPartyAlly>> serverData = ServerData.from(player.getServer());
 		if(serverData == null)
 			return true;
-		ServerLevel serverLevel = ServerLevelHelper.getServerLevel(player.getLevel());
 		boolean shouldProtect = serverData.getChunkProtection().onUseItemAt(serverData, player, serverLevel, pos, direction, itemStack, null, false, false, true);
 		return !shouldProtect;
 	}
@@ -157,10 +161,12 @@ public class ServerCore {
 			return true;
 		if(level.getServer() == null)
 			return true;
+		ServerLevel serverLevel = ServerLevelHelper.getServerLevel(level);
+		if(serverLevel == null)
+			return true;
 		IServerData<IServerClaimsManager<IPlayerChunkClaim, IServerPlayerClaimInfo<IPlayerDimensionClaims<IPlayerClaimPosList>>, IServerDimensionClaimsManager<IServerRegionClaims>>, IServerParty<IPartyMember, IPartyPlayerInfo, IPartyAlly>> serverData = ServerData.from(level.getServer());
 		if(serverData == null)
 			return true;
-		ServerLevel serverLevel = ServerLevelHelper.getServerLevel(level);
 		boolean shouldProtect = serverData.getChunkProtection().onFluidSpread(serverData, serverLevel, from, to);
 		return !shouldProtect;
 	}
@@ -178,25 +184,31 @@ public class ServerCore {
 	public static boolean canPistonPush(PistonStructureResolver pistonStructureResolver, Level level, BlockPos pistonPos, Direction direction, boolean extending){
 		if(level.getServer() == null)
 			return true;
+		ServerLevel serverLevel = ServerLevelHelper.getServerLevel(level);
+		if(serverLevel == null)
+			return true;
 		IServerData<IServerClaimsManager<IPlayerChunkClaim, IServerPlayerClaimInfo<IPlayerDimensionClaims<IPlayerClaimPosList>>, IServerDimensionClaimsManager<IServerRegionClaims>>, IServerParty<IPartyMember, IPartyPlayerInfo, IPartyAlly>> serverData = ServerData.from(level.getServer());
 		if(serverData == null)
 			return true;
-		boolean shouldProtect = serverData.getChunkProtection().onPistonPush(serverData, ServerLevelHelper.getServerLevel(level), pistonStructureResolver.getToPush(), pistonStructureResolver.getToDestroy(), pistonPos, direction, extending);
+		boolean shouldProtect = serverData.getChunkProtection().onPistonPush(serverData, serverLevel, pistonStructureResolver.getToPush(), pistonStructureResolver.getToDestroy(), pistonPos, direction, extending);
 		return !shouldProtect;
 	}
 
-	private static boolean isCreateModAllowed(IServerData<IServerClaimsManager<IPlayerChunkClaim, IServerPlayerClaimInfo<IPlayerDimensionClaims<IPlayerClaimPosList>>, IServerDimensionClaimsManager<IServerRegionClaims>>, IServerParty<IPartyMember, IPartyPlayerInfo, IPartyAlly>> serverData, Level level, int posChunkX, int posChunkZ, BlockPos sourceOrAnchor, boolean checkNeighborBlocks, boolean affectsBlocks, boolean affectsEntities){
-		boolean shouldProtect = serverData.getChunkProtection().onCreateMod(serverData, ServerLevelHelper.getServerLevel(level), posChunkX, posChunkZ, sourceOrAnchor, checkNeighborBlocks, affectsBlocks, affectsEntities);
+	private static boolean isCreateModAllowed(IServerData<IServerClaimsManager<IPlayerChunkClaim, IServerPlayerClaimInfo<IPlayerDimensionClaims<IPlayerClaimPosList>>, IServerDimensionClaimsManager<IServerRegionClaims>>, IServerParty<IPartyMember, IPartyPlayerInfo, IPartyAlly>> serverData, ServerLevel serverLevel, int posChunkX, int posChunkZ, BlockPos sourceOrAnchor, boolean checkNeighborBlocks, boolean affectsBlocks, boolean affectsEntities){
+		boolean shouldProtect = serverData.getChunkProtection().onCreateMod(serverData, serverLevel, posChunkX, posChunkZ, sourceOrAnchor, checkNeighborBlocks, affectsBlocks, affectsEntities);
 		return !shouldProtect;
 	}
 
 	private static boolean isCreateModAllowed(Level level, BlockPos pos, BlockPos sourceOrAnchor, boolean affectsBlocks, boolean affectsEntities){
 		if(level.getServer() == null)
 			return true;
+		ServerLevel serverLevel = ServerLevelHelper.getServerLevel(level);
+		if(serverLevel == null)
+			return true;
 		IServerData<IServerClaimsManager<IPlayerChunkClaim, IServerPlayerClaimInfo<IPlayerDimensionClaims<IPlayerClaimPosList>>, IServerDimensionClaimsManager<IServerRegionClaims>>, IServerParty<IPartyMember, IPartyPlayerInfo, IPartyAlly>> serverData = ServerData.from(level.getServer());
 		if(serverData == null)
 			return true;
-		return isCreateModAllowed(serverData, level, pos.getX() >> 4, pos.getZ() >> 4, sourceOrAnchor, true, affectsBlocks, affectsEntities);
+		return isCreateModAllowed(serverData, serverLevel, pos.getX() >> 4, pos.getZ() >> 4, sourceOrAnchor, true, affectsBlocks, affectsEntities);
 	}
 
 	public static boolean isCreateModAllowed(Level level, BlockPos pos, ICreateContraption contraption){
@@ -204,10 +216,13 @@ public class ServerCore {
 		//called when a contraption tries to move a block
 		if(level.getServer() == null)
 			return true;
+		ServerLevel serverLevel = ServerLevelHelper.getServerLevel(level);
+		if(serverLevel == null)
+			return true;
 		IServerData<IServerClaimsManager<IPlayerChunkClaim, IServerPlayerClaimInfo<IPlayerDimensionClaims<IPlayerClaimPosList>>, IServerDimensionClaimsManager<IServerRegionClaims>>, IServerParty<IPartyMember, IPartyPlayerInfo, IPartyAlly>> serverData = ServerData.from(level.getServer());
 		if(serverData == null)
 			return true;
-		return isCreateModAllowed(serverData, level, pos.getX() >> 4, pos.getZ() >> 4, getEffectiveAnchor(contraption), true, true, false);
+		return isCreateModAllowed(serverData, serverLevel, pos.getX() >> 4, pos.getZ() >> 4, getEffectiveAnchor(contraption), true, true, false);
 	}
 
 	public static BlockPos CAPTURED_TARGET_POS;
@@ -225,13 +240,15 @@ public class ServerCore {
 	public static void onCreateModSymmetryProcessed(Level level, Player player){
 		if(level.getServer() == null)
 			return;
+		ServerLevel serverLevel = ServerLevelHelper.getServerLevel(level);
+		if(serverLevel == null)
+			return;
 		IServerData<IServerClaimsManager<IPlayerChunkClaim, IServerPlayerClaimInfo<IPlayerDimensionClaims<IPlayerClaimPosList>>, IServerDimensionClaimsManager<IServerRegionClaims>>, IServerParty<IPartyMember, IPartyPlayerInfo, IPartyAlly>> serverData = ServerData.from(level.getServer());
 		if(serverData == null)
 			return;
 		if(CAPTURED_POS_STATE_MAP == null)
 			return;
 		Iterator<BlockPos> posIterator = CAPTURED_POS_STATE_MAP.keySet().iterator();
-		ServerLevel serverLevel = ServerLevelHelper.getServerLevel(level);
 		while(posIterator.hasNext()){
 			BlockPos pos = posIterator.next();
 			if(serverData.getChunkProtection().onEntityPlaceBlock(serverData, player, serverLevel, pos, null))
@@ -243,20 +260,25 @@ public class ServerCore {
 		Level level = placer.getLevel();
 		if(level == null || level.getServer() == null)
 			return true;
+		ServerLevel serverLevel = ServerLevelHelper.getServerLevel(level);
+		if(serverLevel == null)
+			return true;
 		IServerData<IServerClaimsManager<IPlayerChunkClaim, IServerPlayerClaimInfo<IPlayerDimensionClaims<IPlayerClaimPosList>>, IServerDimensionClaimsManager<IServerRegionClaims>>, IServerParty<IPartyMember, IPartyPlayerInfo, IPartyAlly>> serverData = ServerData.from(level.getServer());
 		if(serverData == null)
 			return true;
-		return isCreateModAllowed(serverData, level, pos.getX() >> 4, pos.getZ() >> 4, placer.getBlockPos(), false, true, false);
+		return isCreateModAllowed(serverData, serverLevel, pos.getX() >> 4, pos.getZ() >> 4, placer.getBlockPos(), false, true, false);
 	}
 
 	public static void onCreateCollideEntities(List<Entity> entities, Entity contraptionEntity, ICreateContraption contraption){
 		Level level = contraptionEntity.getLevel();
 		if(level == null || level.getServer() == null)
 			return;
+		ServerLevel serverLevel = ServerLevelHelper.getServerLevel(level);
+		if(serverLevel == null)
+			return;
 		IServerData<IServerClaimsManager<IPlayerChunkClaim, IServerPlayerClaimInfo<IPlayerDimensionClaims<IPlayerClaimPosList>>, IServerDimensionClaimsManager<IServerRegionClaims>>, IServerParty<IPartyMember, IPartyPlayerInfo, IPartyAlly>> serverData = ServerData.from(level.getServer());
 		if(serverData == null)
 			return;
-		ServerLevel serverLevel = ServerLevelHelper.getServerLevel(level);
 		serverData.getChunkProtection().onCreateModAffectPositionedObjects(serverData, serverLevel, entities, Entity::chunkPosition, getEffectiveAnchor(contraption), true, true, false, true);
 	}
 
@@ -264,10 +286,12 @@ public class ServerCore {
 		Level level = arm.getLevel();
 		if(level == null || level.getServer() == null)
 			return true;
+		ServerLevel serverLevel = ServerLevelHelper.getServerLevel(level);
+		if(serverLevel == null)
+			return true;
 		IServerData<IServerClaimsManager<IPlayerChunkClaim, IServerPlayerClaimInfo<IPlayerDimensionClaims<IPlayerClaimPosList>>, IServerDimensionClaimsManager<IServerRegionClaims>>, IServerParty<IPartyMember, IPartyPlayerInfo, IPartyAlly>> serverData = ServerData.from(level.getServer());
 		if(serverData == null)
 			return true;
-		ServerLevel serverLevel = ServerLevelHelper.getServerLevel(level);
 		if(serverData.getChunkProtection().onCreateModAffectPositionedObjects(serverData, serverLevel, points, p -> new ChunkPos(p.xaero_OPAC_getPos()), arm.getBlockPos(), false, false, true, false)){
 			points.clear();
 			return false;
@@ -411,18 +435,24 @@ public class ServerCore {
 	public static boolean canCreatePipeAffectBlock(Level level, BlockPos from, BlockPos to, boolean simulate){
 		if(simulate || level == null || level.getServer() == null)
 			return true;
+		ServerLevel serverLevel = ServerLevelHelper.getServerLevel(level);
+		if(serverLevel == null)
+			return true;
 		IServerData<IServerClaimsManager<IPlayerChunkClaim, IServerPlayerClaimInfo<IPlayerDimensionClaims<IPlayerClaimPosList>>, IServerDimensionClaimsManager<IServerRegionClaims>>, IServerParty<IPartyMember, IPartyPlayerInfo, IPartyAlly>>
 				serverData = ServerData.from(level.getServer());
-		return isCreateModAllowed(serverData, level, to.getX() >> 4, to.getZ() >> 4, from, false, true, true);
+		return isCreateModAllowed(serverData, serverLevel, to.getX() >> 4, to.getZ() >> 4, from, false, true, true);
 	}
 
 	public static boolean canCreatePloughPos(Level level, ICreateContraption contraption, BlockPos pos){
 		if(level == null || level.getServer() == null)
 			return true;
+		ServerLevel serverLevel = ServerLevelHelper.getServerLevel(level);
+		if(serverLevel == null)
+			return true;
 		IServerData<IServerClaimsManager<IPlayerChunkClaim, IServerPlayerClaimInfo<IPlayerDimensionClaims<IPlayerClaimPosList>>, IServerDimensionClaimsManager<IServerRegionClaims>>, IServerParty<IPartyMember, IPartyPlayerInfo, IPartyAlly>>
 				serverData = ServerData.from(level.getServer());
 		BlockPos anchor = getEffectiveAnchor(contraption);
-		return isCreateModAllowed(serverData, level, pos.getX() >> 4, pos.getZ() >> 4, anchor, true, true, false);
+		return isCreateModAllowed(serverData, serverLevel, pos.getX() >> 4, pos.getZ() >> 4, anchor, true, true, false);
 	}
 
 	private static boolean CREATE_PLACING_CONTRAPTION;
@@ -524,22 +554,33 @@ public class ServerCore {
 	}
 
 	public static void onEntitiesPushBlock(List<? extends Entity> entities, Block block, BlockPos pos){
-		if(entities.isEmpty() || entities.get(0).getServer() == null)
+		if(entities.isEmpty() )
+			return;
+		Entity firstEntity = entities.get(0);
+		if(firstEntity.getServer() == null)
+			return;
+		Level level = firstEntity.getLevel();
+		ServerLevel serverLevel = ServerLevelHelper.getServerLevel(level);
+		if(serverLevel == null)
 			return;
 		IServerData<IServerClaimsManager<IPlayerChunkClaim, IServerPlayerClaimInfo<IPlayerDimensionClaims<IPlayerClaimPosList>>, IServerDimensionClaimsManager<IServerRegionClaims>>, IServerParty<IPartyMember, IPartyPlayerInfo, IPartyAlly>> serverData = ServerData.from(entities.get(0).getServer());
 		if(serverData == null)
 			return;
-		serverData.getChunkProtection().onEntitiesPushBlock(serverData, ServerLevelHelper.getServerLevel(entities.get(0).getLevel()), pos, block, entities);
+		serverData.getChunkProtection().onEntitiesPushBlock(serverData, serverLevel, pos, block, entities);
 	}
 
 	public static boolean onEntityPushBlock(Block block, Entity entity, BlockHitResult blockHitResult){
 		if(entity == null || entity.getServer() == null)
 			return false;
+		Level level = entity.getLevel();
+		ServerLevel serverLevel = ServerLevelHelper.getServerLevel(level);
+		if(serverLevel == null)
+			return false;
 		IServerData<IServerClaimsManager<IPlayerChunkClaim, IServerPlayerClaimInfo<IPlayerDimensionClaims<IPlayerClaimPosList>>, IServerDimensionClaimsManager<IServerRegionClaims>>, IServerParty<IPartyMember, IPartyPlayerInfo, IPartyAlly>> serverData = ServerData.from(entity.getServer());
 		if(serverData == null)
 			return false;
 		List<Entity> helpList = Lists.newArrayList(entity);
-		serverData.getChunkProtection().onEntitiesPushBlock(serverData, ServerLevelHelper.getServerLevel(entity.getLevel()), blockHitResult.getBlockPos(), block, helpList);
+		serverData.getChunkProtection().onEntitiesPushBlock(serverData, serverLevel, blockHitResult.getBlockPos(), block, helpList);
 		return helpList.isEmpty();
 	}
 
@@ -574,6 +615,9 @@ public class ServerCore {
 		Level frostwalkLevel = FROSTWALK_LEVEL;
 		if(frostwalkLevel == null || frostwalkLevel.getServer() == null || !frostwalkLevel.getServer().isSameThread())
 			return pos;
+		ServerLevel serverLevel = ServerLevelHelper.getServerLevel(frostwalkLevel);
+		if(serverLevel == null)
+			return pos;
 		BlockState actualState = frostwalkLevel.getBlockState(pos);
 		if(actualState.getMaterial() != Material.WATER)
 			return pos;
@@ -581,7 +625,6 @@ public class ServerCore {
 		IServerData<IServerClaimsManager<IPlayerChunkClaim, IServerPlayerClaimInfo<IPlayerDimensionClaims<IPlayerClaimPosList>>, IServerDimensionClaimsManager<IServerRegionClaims>>, IServerParty<IPartyMember, IPartyPlayerInfo, IPartyAlly>> serverData = ServerData.from(FROSTWALK_LEVEL.getServer());
 		if(serverData == null)
 			return pos;
-		ServerLevel serverLevel = ServerLevelHelper.getServerLevel(frostwalkLevel);
 		if(serverData.getChunkProtection().onFrostWalk(serverData, FROSTWALK_ENTITY, serverLevel, FROSTWALK_BLOCKPOS))
 			return FROSTWALK_BLOCKPOS.setY(frostwalkLevel.getMaxBuildHeight());//won't be water here lol
 		return pos;
@@ -597,11 +640,13 @@ public class ServerCore {
 	private static final Field ENTITY_INSIDE_PORTAL_FIELD = Reflection.getFieldReflection(Entity.class, "f_19817_", "field_5963", "Z");
 
 	public static boolean onHandleNetherPortal(Entity entity) {
+		ServerLevel serverLevel = ServerLevelHelper.getServerLevel(entity.getLevel());
+		if(serverLevel == null)
+			return false;
 		IServerData<IServerClaimsManager<IPlayerChunkClaim, IServerPlayerClaimInfo<IPlayerDimensionClaims<IPlayerClaimPosList>>, IServerDimensionClaimsManager<IServerRegionClaims>>, IServerParty<IPartyMember, IPartyPlayerInfo, IPartyAlly>>
 				serverData = ServerData.from(entity.getServer());
 		if(serverData == null)
 			return false;
-		ServerLevel serverLevel = ServerLevelHelper.getServerLevel(entity.getLevel());
 		if(serverData.getChunkProtection().onNetherPortal(serverData, entity, serverLevel, entity.blockPosition())){
 			entity.level.getProfiler().pop();
 			Reflection.setReflectFieldValue(entity, ENTITY_INSIDE_PORTAL_FIELD, false);

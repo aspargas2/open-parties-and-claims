@@ -454,6 +454,8 @@ public abstract class CommonEvents {
 		if(entity.getServer() == null)
 			return false;
 		ServerLevel serverLevel = ServerLevelHelper.getServerLevel(level);
+		if(serverLevel == null)
+			return false;
 		IServerData<IServerClaimsManager<IPlayerChunkClaim, IServerPlayerClaimInfo<IPlayerDimensionClaims<IPlayerClaimPosList>>, IServerDimensionClaimsManager<IServerRegionClaims>>, IServerParty<IPartyMember, IPartyPlayerInfo, IPartyAlly>> serverData = ServerData.from(entity.getServer());
 		return serverData.getChunkProtection().onBucketUse(serverData, entity, serverLevel, hitResult, itemStack);
 	}
