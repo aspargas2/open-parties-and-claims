@@ -184,6 +184,8 @@ public class CommonEventsForge extends CommonEvents {
 		MinecraftServer server = event.getEntity().getServer();
 		if(server == null)
 			return;
+		if(!server.isSameThread())
+			return;
 		if(ServerCore.isMobGriefingForItems(server.getTickCount()))//this means that the mob griefing rule is being checked for item pickup
 			return;
 		if(super.onMobGrief(event.getEntity()))
