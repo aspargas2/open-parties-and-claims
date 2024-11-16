@@ -26,16 +26,22 @@ import xaero.pac.common.event.CommonEvents;
 public class ServerLevelHelper {
 
 	public static ServerLevel getServerLevel(Level level){//simply casting to ServerLevel doesn't work with wrappers that override Level (like in the case of Create deployers using buckets)
+		if(level == null)
+			return null;
+		MinecraftServer server = getServer(level);
+		if(server == null)
+			return null;
 		if(level instanceof ServerLevel)
 			return (ServerLevel) level;
-		MinecraftServer server = getServer(level);
-		return server == null ? null : server.getLevel(level.dimension());
+		return server.getLevel(level.dimension());
 	}
 
 	public static MinecraftServer getServer(Level level){
 		MinecraftServer result = level.getServer();
 		if(result == null && CommonEvents.lastServerStarted != null && CommonEvents.lastServerStarted.isSameThread())
 			return CommonEvents.lastServerStarted;
+		if(result != null && !result.isSameThread())
+			return null;
 		return result;
 	}
 
