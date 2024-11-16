@@ -27,6 +27,7 @@ import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.level.block.Block;
 import xaero.pac.OpenPartiesAndClaims;
 import xaero.pac.OpenPartiesAndClaimsFabric;
+import xaero.pac.common.server.world.ServerLevelHelper;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -41,12 +42,14 @@ public class ServerCoreFabric {
 	private static final Set<MobSpawnType> DISABLED_MOB_SPAWN_TYPES = new HashSet<>();
 
 	public static void tryToSetMobGriefingEntity(Entity entity){
-		if(entity != null && entity.level instanceof ServerLevel)
+		if(entity != null && ServerLevelHelper.getServerLevel(entity.level) != null)
 			MOB_GRIEFING_GAME_RULE_ENTITY = entity;
 	}
 
 	public static void setMobSpawnTypeForNewEntities(MobSpawnType mobSpawnTypeForNewEntities, MinecraftServer server) {
 		if(DISABLED_MOB_SPAWN_TYPES.contains(mobSpawnTypeForNewEntities))
+			return;
+		if(!server.isSameThread())
 			return;
 		if(mobSpawnTypeForNewEntities != MOB_SPAWN_TYPE_FOR_NEW_ENTITIES || MOB_SPAWN_TYPE_FOR_NEW_ENTITIES_TICK != server.getTickCount()) {
 			if(testMobSpawnTypeForNewEntities()) {
