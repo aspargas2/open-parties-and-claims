@@ -294,6 +294,10 @@ public final class ServerData implements IServerData<ServerClaimsManager, Server
 
 	@SuppressWarnings("unchecked")
 	public static IServerData<IServerClaimsManager<IPlayerChunkClaim,IServerPlayerClaimInfo<IPlayerDimensionClaims<IPlayerClaimPosList>>, IServerDimensionClaimsManager<IServerRegionClaims>>, IServerParty<IPartyMember,IPartyPlayerInfo, IPartyAlly>> from(MinecraftServer server) {
+		if(server == null)
+			return null;
+		if(!server.isSameThread())
+			return null;
 		return (IServerData<IServerClaimsManager<IPlayerChunkClaim,IServerPlayerClaimInfo<IPlayerDimensionClaims<IPlayerClaimPosList>>, IServerDimensionClaimsManager<IServerRegionClaims>>, IServerParty<IPartyMember,IPartyPlayerInfo, IPartyAlly>>)
 				((IOpenPACMinecraftServer)server).getXaero_OPAC_ServerData();
 	}
