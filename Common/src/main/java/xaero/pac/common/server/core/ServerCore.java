@@ -1006,14 +1006,14 @@ public class ServerCore {
 	}
 
 	public static void beforePressurePlateCheckPressed(Level level, Block block, BlockPos blockPos){
-		if(level instanceof ServerLevel) {
+		if(ServerLevelHelper.getServerLevel(level) != null) {
 			DETECTING_ENTITY_BLOCK_COLLISION = block;
 			DETECTING_ENTITY_BLOCK_COLLISION_POS = blockPos;
 		}
 	}
 
 	public static void afterPressurePlateCheckPressed(Level level){
-		if(level instanceof ServerLevel)
+		if(ServerLevelHelper.getServerLevel(level) != null)
 			DETECTING_ENTITY_BLOCK_COLLISION = null;
 	}
 
