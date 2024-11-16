@@ -304,10 +304,10 @@ public abstract class CommonEvents {
 	public boolean onMobGrief(Entity entity) {
 		if(entity == null /*anonymous fireballs on Forge*/)
 			return false;
-		if(entity.getServer() == null)
-			return false;
 		IServerData<IServerClaimsManager<IPlayerChunkClaim, IServerPlayerClaimInfo<IPlayerDimensionClaims<IPlayerClaimPosList>>, IServerDimensionClaimsManager<IServerRegionClaims>>, IServerParty<IPartyMember, IPartyPlayerInfo, IPartyAlly>>
 				serverData = ServerData.from(entity.getServer());
+		if(serverData == null)
+			return false;
 		return serverData.getChunkProtection().onMobGrief(serverData, entity);
 	}
 
@@ -352,10 +352,10 @@ public abstract class CommonEvents {
 	}
 
 	public boolean onInteractEntitySpecific(Entity source, Entity target, InteractionHand hand) {
-		if(target.getServer() == null)
-			return false;
 		IServerData<IServerClaimsManager<IPlayerChunkClaim, IServerPlayerClaimInfo<IPlayerDimensionClaims<IPlayerClaimPosList>>, IServerDimensionClaimsManager<IServerRegionClaims>>, IServerParty<IPartyMember, IPartyPlayerInfo, IPartyAlly>>
 				serverData = ServerData.from(target.getServer());
+		if(serverData == null)
+			return false;
 		return serverData.getChunkProtection().onEntityInteraction(serverData, source, source, target, null, hand, false, true, true);
 	}
 
@@ -369,10 +369,10 @@ public abstract class CommonEvents {
 	}
 
 	public boolean onChorusFruit(Entity entity, Vec3 target){
-		if(entity.getServer() == null)
-			return false;
 		IServerData<IServerClaimsManager<IPlayerChunkClaim, IServerPlayerClaimInfo<IPlayerDimensionClaims<IPlayerClaimPosList>>, IServerDimensionClaimsManager<IServerRegionClaims>>, IServerParty<IPartyMember, IPartyPlayerInfo, IPartyAlly>>
 				serverData = ServerData.from(entity.getServer());
+		if(serverData == null)
+			return false;
 		return serverData.getChunkProtection().onChorusFruitTeleport(serverData, target, entity);
 	}
 
@@ -469,6 +469,8 @@ public abstract class CommonEvents {
 	protected boolean onCropTrample(Entity entity, BlockPos pos) {
 		IServerData<IServerClaimsManager<IPlayerChunkClaim, IServerPlayerClaimInfo<IPlayerDimensionClaims<IPlayerClaimPosList>>, IServerDimensionClaimsManager<IServerRegionClaims>>, IServerParty<IPartyMember, IPartyPlayerInfo, IPartyAlly>>
 				serverData = ServerData.from(entity.getServer());
+		if(serverData == null)
+			return false;
 		return serverData.getChunkProtection().onCropTrample(serverData, entity, pos);
 	}
 
@@ -544,30 +546,32 @@ public abstract class CommonEvents {
 	}
 
 	public boolean onItemPickup(Entity entity, ItemEntity itemEntity) {
-		if(itemEntity.getServer() == null)
-			return false;
 		IServerData<IServerClaimsManager<IPlayerChunkClaim, IServerPlayerClaimInfo<IPlayerDimensionClaims<IPlayerClaimPosList>>, IServerDimensionClaimsManager<IServerRegionClaims>>, IServerParty<IPartyMember, IPartyPlayerInfo, IPartyAlly>>
 				serverData = ServerData.from(itemEntity.getServer());
+		if(serverData == null)
+			return false;
 		return serverData.getChunkProtection().onItemPickup(serverData, entity, itemEntity);
 	}
 
 	public boolean onMobSpawn(Entity entity, double x, double y, double z, MobSpawnType spawnReason) {
 		if(spawnReason == MobSpawnType.CHUNK_GENERATION)
 			return false;
-		if(entity == null || entity.getServer() == null || !entity.getServer().isSameThread())
+		if(entity == null)
 			return false;
 		IServerData<IServerClaimsManager<IPlayerChunkClaim, IServerPlayerClaimInfo<IPlayerDimensionClaims<IPlayerClaimPosList>>, IServerDimensionClaimsManager<IServerRegionClaims>>, IServerParty<IPartyMember, IPartyPlayerInfo, IPartyAlly>>
 				serverData = ServerData.from(entity.getServer());
+		if(serverData == null)
+			return false;
 		return serverData.getChunkProtection().onMobSpawn(serverData, entity, x, y, z, spawnReason);
 	}
 
 	public boolean onProjectileImpact(HitResult hitResult, Projectile entity){
-		if(entity.getServer() == null)
-			return false;
 		if(hitResult == null || hitResult.getType() == HitResult.Type.MISS)
 			return false;
 		IServerData<IServerClaimsManager<IPlayerChunkClaim, IServerPlayerClaimInfo<IPlayerDimensionClaims<IPlayerClaimPosList>>, IServerDimensionClaimsManager<IServerRegionClaims>>, IServerParty<IPartyMember, IPartyPlayerInfo, IPartyAlly>>
 				serverData = ServerData.from(entity.getServer());
+		if(serverData == null)
+			return false;
 		return serverData.getChunkProtection().onProjectileImpact(serverData, entity, hitResult);
 	}
 
