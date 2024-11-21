@@ -1106,6 +1106,14 @@ public class ServerCore {
 		return PROJECTILE_HIT;
 	}
 
+	public static void onLightningCauseSet(LightningBolt bolt){
+		IServerData<IServerClaimsManager<IPlayerChunkClaim, IServerPlayerClaimInfo<IPlayerDimensionClaims<IPlayerClaimPosList>>, IServerDimensionClaimsManager<IServerRegionClaims>>, IServerParty<IPartyMember, IPartyPlayerInfo, IPartyAlly>>
+				serverData = ServerData.from(bolt.getServer());
+		if(serverData == null)
+			return;
+		serverData.getChunkProtection().onLightningBolt(serverData, bolt);
+	}
+
 	public static void reset(){
 		CAPTURED_TARGET_POS = null;
 		CAPTURED_POS_STATE_MAP = null;

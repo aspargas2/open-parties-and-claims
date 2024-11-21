@@ -38,6 +38,7 @@
         "MixinItemEntity",
         "MixinLargeFireball",
         "MixinLevel",
+        "MixinLightningBolt",
         "MixinLivingEntity",
         "MixinMinecraftServer",
         "MixinMob",

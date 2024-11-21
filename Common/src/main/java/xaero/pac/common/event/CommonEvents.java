@@ -404,12 +404,7 @@ public abstract class CommonEvents {
 				if(serverData.getChunkProtection().onLivingLootEntity(serverData, ServerCore.getDyingLivingForCurrentEntitySpawns(serverLevel.getServer().getTickCount()), entity, ServerCore.getDyingDamageSourceForCurrentEntitySpawns(serverLevel.getServer().getTickCount())))
 					return true;
 			}
-			if (entity instanceof LightningBolt bolt) {
-				IServerData<IServerClaimsManager<IPlayerChunkClaim, IServerPlayerClaimInfo<IPlayerDimensionClaims<IPlayerClaimPosList>>, IServerDimensionClaimsManager<IServerRegionClaims>>, IServerParty<IPartyMember, IPartyPlayerInfo, IPartyAlly>>
-						serverData = ServerData.from(entity.getServer());
-				serverData.getChunkProtection().onLightningBolt(serverData, bolt);
-				return false;
-			} else if (entity instanceof Projectile projectile && projectile.getOwner() != null && projectile.getOwner().level() == entity.level()) {
+			if (entity instanceof Projectile projectile && projectile.getOwner() != null && projectile.getOwner().level() == entity.level()) {
 				SectionPos oldSection = SectionPos.of(projectile.getOwner().blockPosition());
 				SectionPos newSection = SectionPos.of(entity.blockPosition());
 				if (oldSection.x() != newSection.x() || oldSection.z() != newSection.z()) {

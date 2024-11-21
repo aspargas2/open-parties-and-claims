@@ -1846,6 +1846,24 @@ function initializeCoreMod() {
 
                 return classNode
             }
+        },
+        'xaero_pac_lightningbolt_setcause': {
+            'target' : {
+                'type': 'METHOD',
+                'class': 'net.minecraft.world.entity.LightningBolt',
+                'methodName': 'setCause',
+                'methodDesc' : '(Lnet/minecraft/server/level/ServerPlayer;)V'
+            },
+            'transformer' : function(methodNode){
+                var insnToInsertGetter = function() {
+                    var insnToInsert = new InsnList()
+                    insnToInsert.add(new VarInsnNode(Opcodes.ALOAD, 0))
+                    insnToInsert.add(new MethodInsnNode(Opcodes.INVOKESTATIC, 'xaero/pac/common/server/core/ServerCore', 'onLightningCauseSet', '(Lnet/minecraft/world/entity/LightningBolt;)V'))
+                    return insnToInsert
+                }
+                insertBeforeReturn2(methodNode, insnToInsertGetter)
+                return methodNode
+            }
         }
 	}
 }
