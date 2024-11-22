@@ -33,6 +33,7 @@ import xaero.pac.common.server.claims.IServerClaimsManager;
 import xaero.pac.common.server.claims.IServerDimensionClaimsManager;
 import xaero.pac.common.server.claims.IServerRegionClaims;
 import xaero.pac.common.server.claims.player.IServerPlayerClaimInfo;
+import xaero.pac.common.server.command.CommandRequirementHelper;
 import xaero.pac.common.server.parties.party.IPartyManager;
 import xaero.pac.common.server.parties.party.IServerParty;
 
@@ -42,7 +43,7 @@ import java.util.function.Predicate;
 public class CommandRequirementProvider {
 	
 	public Predicate<CommandSourceStack> getMemberRequirement(BiFunction<IServerParty<IPartyMember, IPartyPlayerInfo, IPartyAlly>, IPartyMember, Boolean> casterMemberInfoRequirement) {
-		return c -> {
+		return CommandRequirementHelper.onServerThread(c -> {
 			try {
 				ServerPlayer player = c.getPlayerOrException();
 				IServerData<IServerClaimsManager<IPlayerChunkClaim, IServerPlayerClaimInfo<IPlayerDimensionClaims<IPlayerClaimPosList>>, IServerDimensionClaimsManager<IServerRegionClaims>>, IServerParty<IPartyMember, IPartyPlayerInfo, IPartyAlly>> serverData = ServerData.from(c.getServer());
@@ -55,11 +56,11 @@ public class CommandRequirementProvider {
 			} catch(CommandSyntaxException e) {
 				return false;
 			}
-		};
+		});
 	}
 	
 	public Predicate<CommandSourceStack> getNonMemberRequirement(Predicate<ServerPlayer> playerRequirement){
-		return c -> {
+		return CommandRequirementHelper.onServerThread(c -> {
 			try {
 				ServerPlayer player = c.getPlayerOrException();
 				IServerData<IServerClaimsManager<IPlayerChunkClaim, IServerPlayerClaimInfo<IPlayerDimensionClaims<IPlayerClaimPosList>>, IServerDimensionClaimsManager<IServerRegionClaims>>, IServerParty<IPartyMember, IPartyPlayerInfo, IPartyAlly>> serverData = ServerData.from(c.getServer());
@@ -69,7 +70,7 @@ public class CommandRequirementProvider {
 			} catch(CommandSyntaxException e) {
 				return false;
 			}
-		};
+		});
 	}
 
 }
