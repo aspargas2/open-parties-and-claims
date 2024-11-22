@@ -42,6 +42,7 @@ import xaero.pac.common.server.claims.IServerDimensionClaimsManager;
 import xaero.pac.common.server.claims.IServerRegionClaims;
 import xaero.pac.common.server.claims.player.IServerPlayerClaimInfo;
 import xaero.pac.common.server.claims.sync.ClaimsManagerSynchronizer;
+import xaero.pac.common.server.command.CommandRequirementHelper;
 import xaero.pac.common.server.parties.party.IServerParty;
 import xaero.pac.common.server.player.config.IPlayerConfig;
 import xaero.pac.common.server.player.config.PlayerConfig;
@@ -129,7 +130,7 @@ public class ClaimsClaimCommands {
 	}
 
 	public static Predicate<CommandSourceStack> getServerClaimCommandRequirement(){
-		return source -> {
+		return CommandRequirementHelper.onServerThread(source -> {
 			if(source.hasPermission(2))
 				return true;
 			try {
@@ -142,7 +143,7 @@ public class ClaimsClaimCommands {
 			} catch (CommandSyntaxException e) {
 			}
 			return false;
-		};
+		});
 	}
 	
 }
