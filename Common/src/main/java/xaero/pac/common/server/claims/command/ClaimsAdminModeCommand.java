@@ -39,6 +39,7 @@ import xaero.pac.common.server.claims.IServerClaimsManager;
 import xaero.pac.common.server.claims.IServerDimensionClaimsManager;
 import xaero.pac.common.server.claims.IServerRegionClaims;
 import xaero.pac.common.server.claims.player.IServerPlayerClaimInfo;
+import xaero.pac.common.server.command.CommandRequirementHelper;
 import xaero.pac.common.server.config.ServerConfig;
 import xaero.pac.common.server.parties.party.IServerParty;
 import xaero.pac.common.server.player.data.ServerPlayerData;
@@ -49,7 +50,7 @@ public class ClaimsAdminModeCommand {
 
 	public void register(CommandDispatcher<CommandSourceStack> dispatcher, Commands.CommandSelection environment) {
 		LiteralArgumentBuilder<CommandSourceStack> command = Commands.literal(ClaimsCommandRegister.COMMAND_PREFIX).requires(context -> ServerConfig.CONFIG.claimsEnabled.get()).then(Commands.literal("admin-mode")
-				.requires(context -> {
+				.requires(CommandRequirementHelper.onServerThread(context -> {
 						if(context.hasPermission(2) )
 							return true;
 						try {
@@ -63,7 +64,7 @@ public class ClaimsAdminModeCommand {
 						} catch (CommandSyntaxException e) {
 							return false;
 						}
-					})
+					}))
 				.executes(context -> {
 					ServerPlayer player = context.getSource().getPlayerOrException();
 					MinecraftServer server = player.getServer();
