@@ -25,6 +25,7 @@ import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.util.TriState;
+import net.neoforged.neoforge.entity.XpOrbTargetingEvent;
 import net.neoforged.neoforge.event.AddReloadListenerEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.TagsUpdatedEvent;
@@ -284,6 +285,11 @@ public class CommonEventsNeoForge extends CommonEvents {
 	public void onProjectileImpact(ProjectileImpactEvent event){
 		if(super.onProjectileImpact(event.getRayTraceResult(), event.getProjectile()))
 			event.setCanceled(true);
+	}
+
+	@SubscribeEvent(priority = EventPriority.LOWEST)//to try to execute last
+	public void onXpOrbTargetting(XpOrbTargetingEvent event){
+		event.setFollowingPlayer(ServerCore.onExperiencePickup(event.getFollowingPlayer(), event.getXpOrb()));
 	}
 
 	@SubscribeEvent
