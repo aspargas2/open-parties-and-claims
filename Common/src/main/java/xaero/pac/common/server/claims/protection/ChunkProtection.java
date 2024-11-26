@@ -50,11 +50,13 @@ import net.minecraft.world.item.*;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ServerExplosion;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.*;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import org.apache.commons.lang3.function.TriFunction;
+import xaero.pac.OpenPartiesAndClaims;
 import xaero.pac.common.claims.player.IPlayerChunkClaim;
 import xaero.pac.common.claims.player.api.IPlayerChunkClaimAPI;
 import xaero.pac.common.parties.party.IPartyPlayerInfo;
@@ -745,7 +747,7 @@ public class ChunkProtection
 		if(itemUseAtTargetAllowed){
 			//testing if the pos in the block hit direction also allows any item interaction with the same block
 			if(isOnChunkEdge(pos)) {
-				BlockPos offsetPos = pos.offset(direction.getNormal());
+				BlockPos offsetPos = pos.offset(direction.getUnitVec3i());
 				ChunkPos offsetChunkPos = new ChunkPos(offsetPos);
 				if(!chunkPos.equals(offsetChunkPos)) {
 					IPlayerChunkClaim offsetClaim = claimsManager.get(world.dimension().location(), offsetChunkPos);
@@ -859,7 +861,7 @@ public class ChunkProtection
 				!(item instanceof PickaxeItem) &&
 				!(item instanceof BoatItem) &&
 				!itemStack.is(ItemTags.BOATS) &&
-				!(item instanceof MilkBucketItem) &&
+				!(itemStack.has(DataComponents.CONSUMABLE)) &&
 				!(item instanceof ArmorItem)
 				||
 				additionalBannedItems.contains(item);
@@ -872,7 +874,7 @@ public class ChunkProtection
 		Item item = itemStack.getItem();
 		if(completelyDisabledItems.contains(item)) {
 			if(messages && entity instanceof ServerPlayer serverPlayer)
-				entity.sendSystemMessage(serverData.getAdaptiveLocalizer().getFor(serverPlayer, hand == null ? ITEM_DISABLED_ANY : hand == InteractionHand.MAIN_HAND ? ITEM_DISABLED_MAIN : ITEM_DISABLED_OFF));
+				serverPlayer.sendSystemMessage(serverData.getAdaptiveLocalizer().getFor(serverPlayer, hand == null ? ITEM_DISABLED_ANY : hand == InteractionHand.MAIN_HAND ? ITEM_DISABLED_MAIN : ITEM_DISABLED_OFF));
 			return true;
 		}
 		if(hasActiveFullPass(entity))
@@ -911,8 +913,8 @@ public class ChunkProtection
 					}
 				}
 		}
-		if(messages && shouldProtect && entity instanceof ServerPlayer)
-			entity.sendSystemMessage(serverData.getAdaptiveLocalizer().getFor((ServerPlayer) entity, hand == null ? USE_ITEM_ANY : hand == InteractionHand.MAIN_HAND ? USE_ITEM_MAIN : USE_ITEM_OFF));
+		if(messages && shouldProtect && entity instanceof ServerPlayer serverPlayer)
+			serverPlayer.sendSystemMessage(serverData.getAdaptiveLocalizer().getFor(serverPlayer, hand == null ? USE_ITEM_ANY : hand == InteractionHand.MAIN_HAND ? USE_ITEM_MAIN : USE_ITEM_OFF));
 		return shouldProtect;
 	}
 
@@ -993,10 +995,10 @@ public class ChunkProtection
 			//checking checkEntityExceptions before shouldProtectEntity so that ALLOW isn't overridden with PASS
 			if (targetResult == InteractionTargetResult.PROTECT) {
 				if (messageReceiver instanceof ServerPlayer player) {
-					messageReceiver.sendSystemMessage(serverData.getAdaptiveLocalizer().getFor(player, hand == null ? CANT_INTERACT_ENTITY : hand == InteractionHand.MAIN_HAND ? CANT_INTERACT_ENTITY_MAIN : CANT_INTERACT_ENTITY_OFF));
+					player.sendSystemMessage(serverData.getAdaptiveLocalizer().getFor(player, hand == null ? CANT_INTERACT_ENTITY : hand == InteractionHand.MAIN_HAND ? CANT_INTERACT_ENTITY_MAIN : CANT_INTERACT_ENTITY_OFF));
 					if (needsItemCheck) {
 						Component message = hand == InteractionHand.MAIN_HAND ? ENTITY_TRY_EMPTY_MAIN : ENTITY_TRY_EMPTY_OFF;
-						messageReceiver.sendSystemMessage(serverData.getAdaptiveLocalizer().getFor(player, message));
+						player.sendSystemMessage(serverData.getAdaptiveLocalizer().getFor(player, message));
 					}
 				}
 				//OpenPartiesAndClaims.LOGGER.info("stopped {} interacting with {}", entity, target);
@@ -1146,12 +1148,12 @@ public class ChunkProtection
 			entity.removeVehicle();
 			entity.moveTo(fixedX, entity.getY(), fixedZ, entity.getYRot(), entity.getXRot());//including the rotation is necessary to prevent errors when teleporting players
 			if(entity instanceof ServerPlayer player)
-				player.connection.send(new ClientboundPlayerPositionPacket(fixedX, entity.getY(), fixedZ, entity.getYRot(), entity.getXRot(), Collections.emptySet(), -1));
+				player.connection.teleport(fixedX, entity.getY(), fixedZ, entity.getYRot(), entity.getXRot());
 			ignoreChunkEnter = false;
 		}
 	}
 	
-	public void onExplosionDetonate(IServerData<CM, ?> serverData, ServerLevel world, Explosion explosion, List<Entity> affectedEntities, List<BlockPos> affectedBlocks) {
+	public void onExplosionDetonate(IServerData<CM, ?> serverData, ServerLevel world, ServerExplosion explosion, List<Entity> affectedEntities, List<BlockPos> affectedBlocks) {
 		if(!ServerConfig.CONFIG.claimsEnabled.get())
 			return;
 		IPlayerConfigManager playerConfigs = serverData.getPlayerConfigs();
@@ -1204,8 +1206,8 @@ public class ChunkProtection
 			accessorId = accessor.getUUID();
 		}
 		if(checkProtectionLeveledOption(PlayerConfigOptions.PROTECT_CLAIMED_CHUNKS_CHORUS_FRUIT, claimConfig, accessor, accessorId) && !hasChunkAccess(claimConfig, accessor, accessorId)) {
-			if(entity instanceof ServerPlayer)
-				entity.sendSystemMessage(serverData.getAdaptiveLocalizer().getFor((ServerPlayer) entity, CANT_CHORUS));
+			if(entity instanceof ServerPlayer player)
+				player.sendSystemMessage(serverData.getAdaptiveLocalizer().getFor(player, CANT_CHORUS));
 			//OpenPartiesAndClaims.LOGGER.info("stopped {} from teleporting to {}", entity, pos);
 			return true;
 		}
@@ -1213,8 +1215,10 @@ public class ChunkProtection
 	}
 
 	public void onLightningBolt(IServerData<CM, ?> serverData, LightningBolt bolt) {
+		OpenPartiesAndClaims.LOGGER.info("checking lightning 1 " + bolt.getCause());
 		if(!ServerConfig.CONFIG.claimsEnabled.get() || bolt.getCause() == null)
 			return;
+		OpenPartiesAndClaims.LOGGER.info("checking lightning 2");
 		IPlayerConfigManager playerConfigs = serverData.getPlayerConfigs();
 		for(int i = -1; i < 2; i++)
 			for(int j = -1; j < 2; j++) {
@@ -1225,10 +1229,12 @@ public class ChunkProtection
 					if (checkProtectionLeveledOption(PlayerConfigOptions.PROTECT_CLAIMED_CHUNKS_PLAYER_LIGHTNING, config, bolt.getCause(), null) &&
 							!hasChunkAccess(config, bolt.getCause(), null) && !isAllowedStaticFakePlayerAction(serverData, bolt.getCause(), chunkPos.getMiddleBlockPosition(0))) {
 						bolt.setVisualOnly(true);
+						OpenPartiesAndClaims.LOGGER.info("checking lightning 3");
 						break;
 					}
 				}
 			}
+		OpenPartiesAndClaims.LOGGER.info("checking lightning 4");
 	}
 
 	public boolean onFireSpread(IServerData<CM, ?> serverData, ServerLevel world, BlockPos pos){
@@ -1294,14 +1300,14 @@ public class ChunkProtection
 						living.getItemInHand(InteractionHand.OFF_HAND) == itemStack ? InteractionHand.OFF_HAND : null;
 			if (additionalBannedItems.contains(itemStack.getItem()) &&
 					onItemRightClick(serverData, hand, itemStack, pos, living, false)) {//only configured items on purpose
-				if(messages && living instanceof ServerPlayer)
-					living.sendSystemMessage(serverData.getAdaptiveLocalizer().getFor((ServerPlayer) living, hand == null ? CANT_APPLY_ITEM_ANY : hand == InteractionHand.MAIN_HAND ? CANT_APPLY_ITEM_THIS_CLOSE_MAIN : CANT_APPLY_ITEM_THIS_CLOSE_OFF));
+				if(messages && living instanceof ServerPlayer player)
+					player.sendSystemMessage(serverData.getAdaptiveLocalizer().getFor(player, hand == null ? CANT_APPLY_ITEM_ANY : hand == InteractionHand.MAIN_HAND ? CANT_APPLY_ITEM_THIS_CLOSE_MAIN : CANT_APPLY_ITEM_THIS_CLOSE_OFF));
 				return true;
 			}
 		}
 		BlockPos pos2 = null;
 		if(direction != null)
-			pos2 = pos.offset(direction.getNormal());
+			pos2 = pos.offset(direction.getUnitVec3i());
 		if(itemUseAtTargetAllowed && pos2 == null)
 			return false;
 		if(entity instanceof Player && isAllowedStaticFakePlayerAction(serverData, (Player)entity, pos, pos2))
@@ -1713,7 +1719,7 @@ public class ChunkProtection
 		return config.getEffective(PlayerConfigOptions.PROTECT_CLAIMED_CHUNKS) && config.getEffective(PlayerConfigOptions.PROTECT_CLAIMED_CHUNKS_RAIDS);
 	}
 
-	public boolean onMobSpawn(IServerData<CM, ?> serverData, Entity entity, double x, double y, double z, MobSpawnType spawnReason) {
+	public boolean onMobSpawn(IServerData<CM, ?> serverData, Entity entity, double x, double y, double z, EntitySpawnReason spawnReason) {
 		if(!ServerConfig.CONFIG.claimsEnabled.get())
 			return false;
 		IPlayerChunkClaim claim = claimsManager.get(entity.level().dimension().location(), new ChunkPos(BlockPos.containing(x, y, z)));
@@ -1723,7 +1729,7 @@ public class ChunkProtection
 			return false;
 		IPlayerConfigOptionSpecAPI<Boolean> option;
 		boolean hostile = entityHelper.isHostile(entity);
-		if(spawnReason == MobSpawnType.SPAWNER){
+		if(spawnReason == EntitySpawnReason.SPAWNER){
 			if(hostile)
 				option = PlayerConfigOptions.PROTECT_CLAIMED_CHUNKS_HOSTILE_SPAWNERS;
 			else
@@ -2073,7 +2079,7 @@ public class ChunkProtection
 		//null block state so that block exceptions don't affect this
 		boolean shouldProtect = onBlockInteraction(serverData, null, projectile, null, null, world, hitResult.getBlockPos(), null, false, false);
 		if(!shouldProtect) {
-			BlockPos offPos = hitResult.getBlockPos().offset(hitResult.getDirection().getNormal());
+			BlockPos offPos = hitResult.getBlockPos().offset(hitResult.getDirection().getUnitVec3i());
 			shouldProtect = onBlockInteraction(serverData, null, projectile, null, null, world, offPos, null, false, false);
 		}
 		if(shouldProtect && projectile.getOwner() instanceof ServerPlayer player)

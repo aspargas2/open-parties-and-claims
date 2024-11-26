@@ -54,12 +54,12 @@ public class MixinEntity implements IEntityFabric {
 		xaero_OPAC_persistentData = tag.getCompound("xaero_OPAC_PersistentData");
 	}
 
-	@Inject(at = @At("RETURN"), method = "isInvulnerableTo", cancellable = true)
-	public void onIsInvulnerableTo(DamageSource damageSource, CallbackInfoReturnable<Boolean> cir) {
+	@Inject(at = @At("RETURN"), method = "isInvulnerableToBase", cancellable = true)
+	public void onIsInvulnerableToBase(DamageSource damageSource, CallbackInfoReturnable<Boolean> cir) {
 		cir.setReturnValue(ServerCore.replaceEntityIsInvulnerable(cir.getReturnValue(), damageSource, (Entity)(Object)this));
 	}
 
-	@Inject(method = "handlePortal", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;changeDimension(Lnet/minecraft/world/level/portal/DimensionTransition;)Lnet/minecraft/world/entity/Entity;"), cancellable = true)
+	@Inject(method = "handlePortal", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;teleport(Lnet/minecraft/world/level/portal/TeleportTransition;)Lnet/minecraft/world/entity/Entity;"), cancellable = true)
 	public void onHandlePortal(CallbackInfo ci){
 		if(ServerCore.onHandleNetherPortal((Entity)(Object)this))
 			ci.cancel();

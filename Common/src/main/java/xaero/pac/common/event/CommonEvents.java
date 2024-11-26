@@ -32,17 +32,14 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.Explosion;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.*;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -364,12 +361,14 @@ public abstract class CommonEvents {
 	}
 
 	public void onExplosionDetonate(Level level, Explosion explosion, List<Entity> affectedEntities, List<BlockPos> affectedBlocks) {
+		if(!(explosion instanceof ServerExplosion serverExplosion))
+			return;
 		ServerLevel serverLevel = ServerLevelHelper.getServerLevel(level);
 		if(serverLevel == null)
 			return;
 		IServerData<IServerClaimsManager<IPlayerChunkClaim, IServerPlayerClaimInfo<IPlayerDimensionClaims<IPlayerClaimPosList>>, IServerDimensionClaimsManager<IServerRegionClaims>>, IServerParty<IPartyMember, IPartyPlayerInfo, IPartyAlly>>
 				serverData = ServerData.from(serverLevel.getServer());
-		serverData.getChunkProtection().onExplosionDetonate(serverData, serverLevel, explosion, affectedEntities, affectedBlocks);
+		serverData.getChunkProtection().onExplosionDetonate(serverData, serverLevel, serverExplosion, affectedEntities, affectedBlocks);
 	}
 
 	public boolean onChorusFruit(Entity entity, Vec3 target){
@@ -552,8 +551,8 @@ public abstract class CommonEvents {
 		return serverData.getChunkProtection().onItemPickup(serverData, entity, itemEntity);
 	}
 
-	public boolean onMobSpawn(Entity entity, double x, double y, double z, MobSpawnType spawnReason) {
-		if(spawnReason == MobSpawnType.CHUNK_GENERATION)
+	public boolean onMobSpawn(Entity entity, double x, double y, double z, EntitySpawnReason spawnReason) {
+		if(spawnReason == EntitySpawnReason.CHUNK_GENERATION)
 			return false;
 		if(entity == null)
 			return false;

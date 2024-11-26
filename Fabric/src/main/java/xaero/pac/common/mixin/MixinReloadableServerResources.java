@@ -29,7 +29,7 @@ import xaero.pac.OpenPartiesAndClaimsFabric;
 @Mixin(ReloadableServerResources.class)
 public class MixinReloadableServerResources {
 
-	@Inject(at = @At("RETURN"), method = "updateRegistryTags")
+	@Inject(at = @At("RETURN"), method = "updateStaticRegistryTags")
 	public void onUpdateRegistryTags(CallbackInfo ci){
 		((OpenPartiesAndClaimsFabric) OpenPartiesAndClaims.INSTANCE).getCommonEvents().onTagsUpdate();
 	}

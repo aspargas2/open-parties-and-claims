@@ -18,31 +18,41 @@
 
 package xaero.pac.common.server.core;
 
+import it.unimi.dsi.fastutil.longs.LongSet;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ServerExplosion;
+import net.minecraft.world.level.chunk.LevelChunk;
 import xaero.pac.OpenPartiesAndClaims;
 import xaero.pac.OpenPartiesAndClaimsFabric;
+import xaero.pac.common.server.world.IServerLevel;
 import xaero.pac.common.server.world.ServerLevelHelper;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class ServerCoreFabric {
 
 	public static Entity MOB_GRIEFING_GAME_RULE_ENTITY = null;
-	private static MobSpawnType MOB_SPAWN_TYPE_FOR_NEW_ENTITIES = null;
+	private static EntitySpawnReason MOB_SPAWN_TYPE_FOR_NEW_ENTITIES = null;
 	private static int MOB_SPAWN_TYPE_FOR_NEW_ENTITIES_TICK;
-	private static final Set<MobSpawnType> DISABLED_MOB_SPAWN_TYPES = new HashSet<>();
+	private static final Set<EntitySpawnReason> DISABLED_MOB_SPAWN_TYPES = new HashSet<>();
+
+	public static List<BlockPos> EXPLOSION_BLOCK_POSITIONS;
 
 	public static void tryToSetMobGriefingEntity(Entity entity){
 		if(entity != null && ServerLevelHelper.getServerLevel(entity.level()) != null)
 			MOB_GRIEFING_GAME_RULE_ENTITY = entity;
 	}
 
-	public static void setMobSpawnTypeForNewEntities(MobSpawnType mobSpawnTypeForNewEntities, MinecraftServer server) {
+	public static void setMobSpawnTypeForNewEntities(EntitySpawnReason mobSpawnTypeForNewEntities, MinecraftServer server) {
 		if(DISABLED_MOB_SPAWN_TYPES.contains(mobSpawnTypeForNewEntities))
 			return;
 		if(!server.isSameThread())
@@ -71,7 +81,7 @@ public class ServerCoreFabric {
 		return false;
 	}
 
-	public static MobSpawnType getMobSpawnTypeForNewEntities(MinecraftServer server) {
+	public static EntitySpawnReason getMobSpawnTypeForNewEntities(MinecraftServer server) {
 		if(server.getTickCount() != MOB_SPAWN_TYPE_FOR_NEW_ENTITIES_TICK)
 			testMobSpawnTypeForNewEntities();
 		return MOB_SPAWN_TYPE_FOR_NEW_ENTITIES;
@@ -92,6 +102,26 @@ public class ServerCoreFabric {
 		if(livingEntity.getUseItem().isEmpty())
 			return;
 		OpenPartiesAndClaimsFabric.INSTANCE.getCommonEvents().onItemUseTick(livingEntity, livingEntity.getUseItem());
+	}
+
+	public static void onExplosionBlockPositions(List<BlockPos> list){
+		EXPLOSION_BLOCK_POSITIONS = list;
+	}
+
+	public static void onExplosion(ServerExplosion serverExplosion, List<Entity> entityList, Level level) {
+		((OpenPartiesAndClaimsFabric) OpenPartiesAndClaims.INSTANCE).getCommonEvents().onExplosionDetonate(serverExplosion, entityList, level);
+		EXPLOSION_BLOCK_POSITIONS = null;
+	}
+
+	public static void onCollectTickingChunks(ServerChunkCache serverChunkCache, List<LevelChunk> list){
+		LongSet forceloadTickets = ((IServerLevel)serverChunkCache.getLevel()).getXaero_OPAC_forceloadTickets();
+		for(long chunkPosLong : forceloadTickets){
+			int chunkX = ChunkPos.getX(chunkPosLong);
+			int chunkZ = ChunkPos.getZ(chunkPosLong);
+			LevelChunk chunk = serverChunkCache.getChunk(chunkX, chunkZ, false);
+			if(chunk != null && !list.contains(chunk))
+				list.add(chunk);
+		}
 	}
 
 	public static void reset() {

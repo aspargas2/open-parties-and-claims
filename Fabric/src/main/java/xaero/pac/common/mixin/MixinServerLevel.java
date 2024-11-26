@@ -22,7 +22,7 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.level.ChunkPos;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -61,7 +61,7 @@ public class MixinServerLevel implements IServerLevel {
 
 	@Inject(method = "tickCustomSpawners", at = @At("HEAD"))
 	public void preTickCustomSpawners(boolean b1, boolean b2, CallbackInfo ci){
-		ServerCoreFabric.setMobSpawnTypeForNewEntities(MobSpawnType.NATURAL, ((ServerLevel)(Object)this).getServer());
+		ServerCoreFabric.setMobSpawnTypeForNewEntities(EntitySpawnReason.NATURAL, ((ServerLevel)(Object)this).getServer());
 	}
 
 	@Inject(method = "tickCustomSpawners", at = @At("RETURN"))

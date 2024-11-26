@@ -34,8 +34,8 @@ import xaero.pac.common.server.core.ServerCore;
 @Mixin(value = FlowingFluid.class, priority = 1000001)
 public class MixinFlowingFluid {
 
-	@Inject(method = "canPassThrough", at = @At("RETURN"), cancellable = true)
-	public void onCanPassThrough(BlockGetter blockGetter, Fluid fluid, BlockPos from, BlockState fromBlockState,
+	@Inject(method = "canMaybePassThrough", at = @At("RETURN"), cancellable = true)
+	public void onMaybeCanPassThrough(BlockGetter blockGetter, BlockPos from, BlockState fromBlockState,
 								 Direction direction, BlockPos to, BlockState toBlockState, FluidState fluidState,
 								 CallbackInfoReturnable<Boolean> infoReturnable){
 		infoReturnable.setReturnValue(ServerCore.replaceFluidCanPassThrough(infoReturnable.getReturnValue(), blockGetter, from, to));

@@ -19,8 +19,8 @@
 package xaero.pac.common.mixin;
 
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.ChorusFruitItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.consume_effects.TeleportRandomlyConsumeEffect;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
@@ -31,14 +31,14 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import xaero.pac.OpenPartiesAndClaims;
 import xaero.pac.OpenPartiesAndClaimsFabric;
 
-@Mixin(ChorusFruitItem.class)
-public class MixinChorusFruitItem {
+@Mixin(TeleportRandomlyConsumeEffect.class)
+public class MixinTeleportRandomlyConsumeEffect {
 
-	@Inject(method = "finishUsingItem", locals = LocalCapture.CAPTURE_FAILHARD, at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;randomTeleport(DDDZ)Z"), cancellable = true)
-	public void onFinishUsingItem(ItemStack stack, Level level, LivingEntity livingEntity, CallbackInfoReturnable<ItemStack> callbackInfoReturnable, ItemStack itemStack2, int i, double d, double e, double f, Vec3 vec3){
+	@Inject(method = "apply", locals = LocalCapture.CAPTURE_FAILSOFT, at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;randomTeleport(DDDZ)Z"), cancellable = true)
+	public void onFinishUsingItem(Level level, ItemStack stack, LivingEntity livingEntity, CallbackInfoReturnable<Boolean> callbackInfoReturnable, boolean bl, int i, double d, double e, double f, Vec3 vec3){
 		Vec3 target = new Vec3(d, e, f);
 		if(((OpenPartiesAndClaimsFabric) OpenPartiesAndClaims.INSTANCE).getCommonEvents().onChorusFruit(livingEntity, target))
-			callbackInfoReturnable.setReturnValue(itemStack2);
+			callbackInfoReturnable.setReturnValue(false);
 	}
 
 }

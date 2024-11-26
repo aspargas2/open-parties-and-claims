@@ -36,12 +36,12 @@ import java.util.function.Predicate;
 @Mixin(EntityGetter.class)
 public interface MixinEntityGetter {
 
-	@Inject(at = @At("RETURN"), method = "getEntitiesOfClass(Ljava/lang/Class;Lnet/minecraft/world/phys/AABB;Ljava/util/function/Predicate;)Ljava/util/List;")
+	@Inject(at = @At("RETURN"), method = "getEntitiesOfClass(Ljava/lang/Class;Lnet/minecraft/world/phys/AABB;Ljava/util/function/Predicate;)Ljava/util/List;", cancellable = true)
 	default <T extends Entity> void onGetEntitiesOfClass(Class<T> c, AABB aabb, Predicate<? super T> predicate, CallbackInfoReturnable<List<T>> cir){
 		if(ServerCore.DETECTING_ENTITY_BLOCK_COLLISION != null){
 			if(!(this instanceof ServerLevel))
 				return;
-			ServerCore.onEntitiesPushBlock(cir.getReturnValue(), ServerCore.DETECTING_ENTITY_BLOCK_COLLISION, ServerCore.DETECTING_ENTITY_BLOCK_COLLISION_POS);
+			cir.setReturnValue(ServerCore.onEntitiesPushBlock(cir.getReturnValue(), ServerCore.DETECTING_ENTITY_BLOCK_COLLISION, ServerCore.DETECTING_ENTITY_BLOCK_COLLISION_POS));
 			if(!(ServerCore.DETECTING_ENTITY_BLOCK_COLLISION instanceof BasePressurePlateBlock))
 				ServerCore.DETECTING_ENTITY_BLOCK_COLLISION = null;
 		}

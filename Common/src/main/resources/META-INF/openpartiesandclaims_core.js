@@ -238,10 +238,9 @@ function transformForEntitiesPushBlock(methodNode, includeClassFiltered, include
     var invokeTargetClass = 'net/minecraft/world/level/Level'
     var insnToInsertGetter = function() {
         var insnToInsert = new InsnList()
-        insnToInsert.add(new InsnNode(Opcodes.DUP))
         insnToInsert.add(new VarInsnNode(Opcodes.ALOAD, 0))
         insnToInsert.add(new VarInsnNode(Opcodes.ALOAD, blockPosArgIndex))
-        insnToInsert.add(new MethodInsnNode(Opcodes.INVOKESTATIC, 'xaero/pac/common/server/core/ServerCore', 'onEntitiesPushBlock', '(Ljava/util/List;Lnet/minecraft/world/level/block/Block;Lnet/minecraft/core/BlockPos;)V'))
+        insnToInsert.add(new MethodInsnNode(Opcodes.INVOKESTATIC, 'xaero/pac/common/server/core/ServerCore', 'onEntitiesPushBlock', '(Ljava/util/List;Lnet/minecraft/world/level/block/Block;Lnet/minecraft/core/BlockPos;)Ljava/util/List;'))
         return insnToInsert
     }
     if(includeClassFiltered){
@@ -516,18 +515,18 @@ function initializeCoreMod() {
                 return methodNode
             }
         },
-        'xaero_pac_flowingfluid_canpassthrough': {
+        'xaero_pac_flowingfluid_canmaybepassthrough': {
             'target' : {
                 'type': 'METHOD',
                 'class': 'net.minecraft.world.level.material.FlowingFluid',
-                'methodName': 'canPassThrough',
-                'methodDesc' : '(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/world/level/material/Fluid;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/material/FluidState;)Z'
+                'methodName': 'canMaybePassThrough',
+                'methodDesc' : '(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/material/FluidState;)Z'
             },
             'transformer' : function(methodNode){
                 var insnToInsert = new InsnList()
                 insnToInsert.add(new VarInsnNode(Opcodes.ALOAD, 1))
-                insnToInsert.add(new VarInsnNode(Opcodes.ALOAD, 3))
-                insnToInsert.add(new VarInsnNode(Opcodes.ALOAD, 6))
+                insnToInsert.add(new VarInsnNode(Opcodes.ALOAD, 2))
+                insnToInsert.add(new VarInsnNode(Opcodes.ALOAD, 5))
                 insnToInsert.add(new MethodInsnNode(Opcodes.INVOKESTATIC, 'xaero/pac/common/server/core/ServerCore', 'replaceFluidCanPassThrough', '(ZLnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/BlockPos;)Z'))
                 insertBeforeReturn(methodNode, insnToInsert)
                 return methodNode
@@ -1151,7 +1150,7 @@ function initializeCoreMod() {
             'target' : {
                 'type': 'METHOD',
                 'class': 'net.minecraft.world.entity.Entity',
-                'methodName': 'isInvulnerableTo',
+                'methodName': 'isInvulnerableToBase',
                 'methodDesc' : '(Lnet/minecraft/world/damagesource/DamageSource;)Z'
             },
             'transformer' : function(methodNode){
@@ -1252,10 +1251,17 @@ function initializeCoreMod() {
                 'type': 'METHOD',
                 'class': 'net.minecraft.world.level.block.TripWireBlock',
                 'methodName': 'checkPressed',
-                'methodDesc' : '(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)V'
+                'methodDesc' : '(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Ljava/util/List;)V'
             },
             'transformer' : function(methodNode){
-                return transformForEntitiesPushBlock(methodNode, false, true, 2)
+                var insnToInsert = new InsnList()
+                insnToInsert.add(new VarInsnNode(Opcodes.ALOAD, 3))
+                insnToInsert.add(new VarInsnNode(Opcodes.ALOAD, 0))
+                insnToInsert.add(new VarInsnNode(Opcodes.ALOAD, 2))
+                insnToInsert.add(new MethodInsnNode(Opcodes.INVOKESTATIC, 'xaero/pac/common/server/core/ServerCore', 'onEntitiesPushBlock', '(Ljava/util/List;Lnet/minecraft/world/level/block/Block;Lnet/minecraft/core/BlockPos;)Ljava/util/List;'))
+                insnToInsert.add(new VarInsnNode(Opcodes.ASTORE, 3))
+                methodNode.instructions.insert(methodNode.instructions.get(0), insnToInsert)
+                return methodNode
             }
         },
         'xaero_pac_targetblock_onprojectilehit': {
@@ -1367,9 +1373,9 @@ function initializeCoreMod() {
             },
             'transformer' : function(methodNode){
                 var invokeTargetClass = 'net/minecraft/world/entity/Entity'
-                var invokeTargetName = 'changeDimension'
-                var invokeTargetNameObf = 'm_5489_'
-                var invokeTargetDesc = '(Lnet/minecraft/world/level/portal/DimensionTransition;)Lnet/minecraft/world/entity/Entity;'
+                var invokeTargetName = 'teleport'
+                var invokeTargetNameObf = 'm_339131_'
+                var invokeTargetDesc = '(Lnet/minecraft/world/level/portal/TeleportTransition;)Lnet/minecraft/world/entity/Entity;'
                 var insnToInsertGetter = function() {
                     var MY_LABEL = new LabelNode(new Label())
                     var insnToInsert = new InsnList()
@@ -1408,7 +1414,7 @@ function initializeCoreMod() {
                 'type': 'METHOD',
                 'class': 'net.minecraft.world.entity.raid.Raid',
                 'methodName': 'findRandomSpawnPos',
-                'methodDesc' : '(II)Lnet/minecraft/core/BlockPos;'
+                'methodDesc' : '(I)Lnet/minecraft/core/BlockPos;'
             },
             'transformer' : function(methodNode){
                 var insnToInsert = new InsnList()
@@ -1470,7 +1476,7 @@ function initializeCoreMod() {
                 invokeTargetClass = 'net/minecraft/world/entity/Mob'
                 invokeTargetName = 'pickUpItem'
                 invokeTargetNameObf = 'm_7581_'
-                invokeTargetDesc = '(Lnet/minecraft/world/entity/item/ItemEntity;)V'
+                invokeTargetDesc = '(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/item/ItemEntity;)V'
                 insnToInsertGetter = function() {
                      var MY_LABEL = new LabelNode(new Label())
                      var insnToInsert = new InsnList()
@@ -1777,10 +1783,10 @@ function initializeCoreMod() {
                 return methodNode
             }
         },
-        'xaero_pac_boat_tick': {
+        'xaero_pac_abstractboat_tick': {
             'target' : {
                 'type': 'METHOD',
-                'class': 'net.minecraft.world.entity.vehicle.Boat',
+                'class': 'net.minecraft.world.entity.vehicle.AbstractBoat',
                 'methodName': 'tick',
                 'methodDesc' : '()V'
             },

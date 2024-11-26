@@ -20,8 +20,8 @@ package xaero.pac.common.mixin;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.level.BaseSpawner;
 import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
@@ -39,7 +39,7 @@ public class MixinBaseSpawner {
 
 	@ModifyVariable(method = "serverTick", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/world/entity/EntityType;by(Lnet/minecraft/nbt/CompoundTag;)Ljava/util/Optional;"))
 	public Optional<EntityType<?>> onServerTickPre(Optional<EntityType<?>> entityType, ServerLevel serverLevel, BlockPos blockPos){
-		ServerCoreFabric.setMobSpawnTypeForNewEntities(MobSpawnType.SPAWNER, serverLevel.getServer());
+		ServerCoreFabric.setMobSpawnTypeForNewEntities(EntitySpawnReason.SPAWNER, serverLevel.getServer());
 		return entityType;
 	}
 

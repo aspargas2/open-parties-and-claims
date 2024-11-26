@@ -18,23 +18,35 @@
 
 package xaero.pac.common.mixin;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.TurtleEggBlock;
+import net.minecraft.world.level.ServerExplosion;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import xaero.pac.common.server.core.ServerCoreFabric;
 
-@Mixin(TurtleEggBlock.class)
-public class MixinTurtleEggBlock {
+import java.util.List;
 
-	@Inject(method = "canDestroyEgg", at = @At("HEAD"))
-	public void onMobGriefGameRuleMethod(ServerLevel level, Entity entity, CallbackInfoReturnable<Boolean> callbackInfo){
-		ServerCoreFabric.tryToSetMobGriefingEntity(entity);
+@Mixin(value = ServerExplosion.class, priority = 1000001)
+public class MixinServerExplosion {
+
+	@Shadow
+	private ServerLevel level;
+
+	@ModifyVariable(method = "explode", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/world/level/ServerExplosion;calculateExplodedPositions()Ljava/util/List;"))
+	public List<BlockPos> onCalculateBlocks(List<BlockPos> blockPosList){
+		ServerCoreFabric.onExplosionBlockPositions(blockPosList);
+		return blockPosList;
+	}
+
+	@ModifyVariable(method = "hurtEntities", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/server/level/ServerLevel;getEntities(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/AABB;)Ljava/util/List;"))
+	public List<Entity> onHurtEntities(List<Entity> entityList){
+		ServerCoreFabric.onExplosion((ServerExplosion)(Object)this, entityList, level);
+		return entityList;
 	}
 
 }

@@ -49,8 +49,8 @@ public class MixinLivingEntity {
 		ServerCoreFabric.tryToSetMobGriefingEntity((Entity)(Object)this);
 	}
 
-	@Inject(at = @At("HEAD"), method = "hurt", cancellable = true)
-	public void onHurt(DamageSource source, float f, CallbackInfoReturnable<Boolean> info) {
+	@Inject(at = @At("HEAD"), method = "hurtServer", cancellable = true)
+	public void onHurtServer(ServerLevel serverLevel, DamageSource source, float f, CallbackInfoReturnable<Boolean> info) {
 		if(((OpenPartiesAndClaimsFabric) OpenPartiesAndClaims.INSTANCE).getCommonEvents().onLivingHurt(source, (Entity)(Object)this))
 			info.setReturnValue(false);
 	}

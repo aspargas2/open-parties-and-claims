@@ -289,7 +289,7 @@ public class ServerConfig {
 					By default the list is empty with the type set to ALL_BUT, which means that all friendly entities are included.""")
 			.translation("gui.xaero_pac_config_friendly_protected_entities")
 			.worldRestart()
-			.defineListAllowEmpty(Lists.newArrayList("friendlyChunkProtectedEntityList"), () -> Lists.newArrayList("minecraft:boat"), s -> s instanceof String);
+			.defineListAllowEmpty(Lists.newArrayList("friendlyChunkProtectedEntityList"), () -> Lists.newArrayList("#minecraft:boat"), s -> s instanceof String);
 
 		hostileChunkProtectedEntityListType = builder
 			.comment("The type of the list defined in \"hostileChunkProtectedEntityList\". ONLY - include only the listed entities. ALL_BUT - include all but the listed entities.")

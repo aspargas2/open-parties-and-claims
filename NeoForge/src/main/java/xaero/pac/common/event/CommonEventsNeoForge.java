@@ -234,7 +234,7 @@ public class CommonEventsNeoForge extends CommonEvents {
 	}
 
 	@SubscribeEvent(priority = EventPriority.HIGHEST)
-	public void onChorusFruit(EntityTeleportEvent.ChorusFruit event){
+	public void onChorusFruit(EntityTeleportEvent.ItemConsumption event){
 		if(super.onChorusFruit(event.getEntity(), event.getTarget()))
 			event.setCanceled(true);
 	}

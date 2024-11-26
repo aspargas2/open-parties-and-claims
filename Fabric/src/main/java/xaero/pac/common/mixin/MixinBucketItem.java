@@ -19,7 +19,7 @@
 package xaero.pac.common.mixin;
 
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.ItemStack;
@@ -37,9 +37,9 @@ import xaero.pac.OpenPartiesAndClaimsFabric;
 public class MixinBucketItem {
 
 	@Inject(method = "use", locals = LocalCapture.CAPTURE_FAILHARD, cancellable = true, at = @At(value = "INVOKE", ordinal = 0, target = "Lnet/minecraft/world/phys/BlockHitResult;getType()Lnet/minecraft/world/phys/HitResult$Type;"))
-	public void onUse(Level level, Player player, InteractionHand interactionHand, CallbackInfoReturnable<InteractionResultHolder<ItemStack>> infoReturnable, ItemStack itemStack, BlockHitResult blockHitResult) {
+	public void onUse(Level level, Player player, InteractionHand interactionHand, CallbackInfoReturnable<InteractionResult> infoReturnable, ItemStack itemStack, BlockHitResult blockHitResult) {
 		if(((OpenPartiesAndClaimsFabric) OpenPartiesAndClaims.INSTANCE).getCommonEvents().onBucketUse(player, level, blockHitResult, itemStack))
-			infoReturnable.setReturnValue(InteractionResultHolder.fail(itemStack));
+			infoReturnable.setReturnValue(InteractionResult.FAIL);
 	}
 
 }

@@ -52,7 +52,7 @@ public final class ChunkProtectionExceptionSet<T> {
 	public void updateTagExceptions(MinecraftServer server){
 		tagBasedExceptions.clear();
 		Registry<T> elementRegistry = elementType.getRegistry(server);
-		exceptionTags.stream().flatMap(tag -> elementRegistry.getTag(tag).stream().flatMap(HolderSet.Named::stream).map(Holder::value)).forEach(tagBasedExceptions::add);
+		exceptionTags.stream().flatMap(tag -> elementRegistry.get(tag).stream().flatMap(HolderSet.Named::stream).map(Holder::value)).forEach(tagBasedExceptions::add);
 	}
 
 	public Stream<Either<T, TagKey<T>>> stream(){

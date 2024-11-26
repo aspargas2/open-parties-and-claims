@@ -65,7 +65,7 @@ public class ServerCoreForge {
 
 	public static List<? extends Entity> onPressurePlateEntityCount(List<? extends Entity> entities) {
 		if (ServerCore.DETECTING_ENTITY_BLOCK_COLLISION != null)
-			ServerCore.onEntitiesPushBlock(entities, ServerCore.DETECTING_ENTITY_BLOCK_COLLISION, ServerCore.DETECTING_ENTITY_BLOCK_COLLISION_POS);
+			return ServerCore.onEntitiesPushBlock(entities, ServerCore.DETECTING_ENTITY_BLOCK_COLLISION, ServerCore.DETECTING_ENTITY_BLOCK_COLLISION_POS);
 		return entities;
 	}
 

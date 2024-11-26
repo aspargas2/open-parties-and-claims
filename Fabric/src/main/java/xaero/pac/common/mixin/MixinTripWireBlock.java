@@ -23,9 +23,12 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.TripWireBlock;
+import net.minecraft.world.level.block.state.BlockState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xaero.pac.common.server.core.ServerCore;
 
 import java.util.List;
@@ -33,10 +36,9 @@ import java.util.List;
 @Mixin(value = TripWireBlock.class, priority = 1000001)
 public class MixinTripWireBlock {
 
-	@ModifyVariable(method = "checkPressed", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/world/level/Level;getEntities(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/AABB;)Ljava/util/List;"))
-	public List<Entity> onCheckPressed(List<Entity> list, Level level, BlockPos blockPos){
-		ServerCore.onEntitiesPushBlock(list, (Block) (Object)this, blockPos);
-		return list;
+	@ModifyVariable(method = "checkPressed(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Ljava/util/List;)V", index = 3, argsOnly = true, at = @At("HEAD"))
+	public List<? extends Entity> onCheckPressed(List<? extends Entity> entities, Level level, BlockPos blockPos, List<? extends Entity> listArg){
+		return ServerCore.onEntitiesPushBlock(entities, (Block) (Object)this, blockPos);
 	}
 
 }

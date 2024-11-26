@@ -168,7 +168,7 @@ public class OPACOptions implements RoleOption<OPACOptions> {
 	public static HolderLookup.Provider USELESS_HOLDER_LOOKUP_PROVIDER = new HolderLookup.Provider(){
 		@Nonnull
 		@Override
-		public Stream<ResourceKey<? extends Registry<?>>> listRegistries() {
+		public Stream<ResourceKey<? extends Registry<?>>> listRegistryKeys() {
 			return Stream.empty();
 		}
 		@Nonnull

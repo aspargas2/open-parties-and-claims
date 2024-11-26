@@ -18,7 +18,6 @@
 
 package xaero.pac.common.server.claims.protection;
 
-import com.mojang.datafixers.util.Pair;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
@@ -49,7 +48,7 @@ public class ExceptionElementType<T> {
 	}
 
 	public Registry<T> getRegistry(MinecraftServer server){
-		return server.registryAccess().registry(registryResourceKey).orElseThrow();
+		return server.registryAccess().lookup(registryResourceKey).orElseThrow();
 	}
 
 	public Iterable<T> getIterable() {
@@ -78,7 +77,7 @@ public class ExceptionElementType<T> {
 	private void updateIterables(MinecraftServer server){
 		Registry<T> registry = getRegistry(server);
 		iterable = registry.stream().toList();
-		tagIterable = registry.getTags().map(Pair::getFirst).toList();
+		tagIterable = registry.listTagIds().toList();
 	}
 
 }

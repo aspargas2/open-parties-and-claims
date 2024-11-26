@@ -1,6 +1,6 @@
 /*
  * Open Parties and Claims - adds chunk claims and player parties to Minecraft
- * Copyright (C) 2023, Xaero <xaero1996@gmail.com> and contributors
+ * Copyright (C) 2024, Xaero <xaero1996@gmail.com> and contributors
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of version 3 of the GNU Lesser General Public License
@@ -18,21 +18,21 @@
 
 package xaero.pac.common.mixin;
 
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.vehicle.Boat;
+import net.minecraft.server.level.ServerChunkCache;
+import net.minecraft.world.level.chunk.LevelChunk;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
-import xaero.pac.common.server.core.ServerCore;
+import xaero.pac.common.server.core.ServerCoreFabric;
 
 import java.util.List;
 
-@Mixin(Boat.class)
-public class MixinBoat {
+@Mixin(ServerChunkCache.class)
+public class MixinServerChunkCache {
 
-	@ModifyVariable(method = "tick", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/world/level/Level;getEntities(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/AABB;Ljava/util/function/Predicate;)Ljava/util/List;"))
-	public List<Entity> onTickGetEntities(List<Entity> list){
-		ServerCore.onEntityAffectsEntities(list, (Boat)(Object)this);
+	@ModifyVariable(method = "collectTickingChunks", at = @At("HEAD"), index = 1)
+	public List<LevelChunk> onCollectTickingChunks(List<LevelChunk> list){
+		ServerCoreFabric.onCollectTickingChunks((ServerChunkCache)(Object)this, list);
 		return list;
 	}
 

@@ -18,7 +18,6 @@
 
 package xaero.pac.common.server.core;
 
-import com.google.common.collect.Lists;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -35,6 +34,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.util.profiling.Profiler;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -94,10 +94,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
@@ -493,7 +490,7 @@ public class ServerCore {
 				serverData = ServerData.from(server);
 		if(serverData == null)
 			return true;
-		Item couplingItem = BuiltInRegistries.ITEM.get(CREATE_COUPLING);
+		Item couplingItem = BuiltInRegistries.ITEM.getValue(CREATE_COUPLING);
 		if(couplingItem == null)
 			return true;
 		Entity cart1 = world.getEntity(cartId1);
@@ -538,22 +535,35 @@ public class ServerCore {
 		return entity == null || !OpenPartiesAndClaims.INSTANCE.getCommonEvents().onEntityDestroyBlock(level, pos, entity);
 	}
 
-	public static void onEntitiesPushBlock(List<? extends Entity> entities, Block block, BlockPos pos){
+	@SuppressWarnings("unchecked")
+	public static <T extends Entity> List<T> onEntitiesPushBlock(List<T> entities, Block block, BlockPos pos){
+		if(entities.size() == 1) {
+			if(onEntityPushBlock(block, entities.get(0), pos))
+				return (List<T>) ENTITY_PUSH_BLOCK_LIST;//it's empty
+			return entities;
+		}
 		if(entities.isEmpty())
-			return;
+			return entities;
 		Entity firstEntity = entities.get(0);
 		IServerData<IServerClaimsManager<IPlayerChunkClaim, IServerPlayerClaimInfo<IPlayerDimensionClaims<IPlayerClaimPosList>>, IServerDimensionClaimsManager<IServerRegionClaims>>, IServerParty<IPartyMember, IPartyPlayerInfo, IPartyAlly>>
 				serverData = ServerData.from(firstEntity.getServer());
 		if(serverData == null)
-			return;
+			return entities;
 		Level level = firstEntity.level();
 		ServerLevel serverLevel = ServerLevelHelper.getServerLevel(level);
 		if(serverLevel == null)
-			return;
+			return entities;
 		serverData.getChunkProtection().onEntitiesPushBlock(serverData, serverLevel, pos, block, entities);
+		return entities;
 	}
 
 	public static boolean onEntityPushBlock(Block block, Entity entity, BlockHitResult blockHitResult){
+		return onEntityPushBlock(block, entity, blockHitResult.getBlockPos());
+	}
+
+	private static List<Entity> ENTITY_PUSH_BLOCK_LIST = new ArrayList<>(1);
+
+	public static boolean onEntityPushBlock(Block block, Entity entity, BlockPos blockPos){
 		if(entity == null)
 			return false;
 		IServerData<IServerClaimsManager<IPlayerChunkClaim, IServerPlayerClaimInfo<IPlayerDimensionClaims<IPlayerClaimPosList>>, IServerDimensionClaimsManager<IServerRegionClaims>>, IServerParty<IPartyMember, IPartyPlayerInfo, IPartyAlly>>
@@ -564,9 +574,11 @@ public class ServerCore {
 		ServerLevel serverLevel = ServerLevelHelper.getServerLevel(level);
 		if(serverLevel == null)
 			return false;
-		List<Entity> helpList = Lists.newArrayList(entity);
-		serverData.getChunkProtection().onEntitiesPushBlock(serverData, serverLevel, blockHitResult.getBlockPos(), block, helpList);
-		return helpList.isEmpty();
+		ENTITY_PUSH_BLOCK_LIST.add(entity);
+		serverData.getChunkProtection().onEntitiesPushBlock(serverData, serverLevel, blockPos, block, ENTITY_PUSH_BLOCK_LIST);
+		boolean result = ENTITY_PUSH_BLOCK_LIST.isEmpty();
+		ENTITY_PUSH_BLOCK_LIST.clear();
+		return result;
 	}
 
 	public static final BlockPos.MutableBlockPos ENCHANTMENT_EFFECT_BLOCKPOS = new BlockPos.MutableBlockPos();
@@ -639,7 +651,7 @@ public class ServerCore {
 		checkEnchantmentOnBlockUsable(level);//checking but not using the value
 		HANDLING_ENCHANTMENT_ON_BLOCK = level.getServer().getTickCount();
 		if(serverData.getChunkProtection().onEnchantmentEffectOnBlock(serverData, entity, level, actual)) {
-			ENCHANTMENT_EFFECT_BLOCKPOS.set(actual.getX(), level.getMaxBuildHeight(), actual.getZ());
+			ENCHANTMENT_EFFECT_BLOCKPOS.set(actual.getX(), level.getMaxY() + 1, actual.getZ());
 			return ENCHANTMENT_EFFECT_BLOCKPOS;//outside build limit, so won't build
 		}
 		return actual;
@@ -653,7 +665,7 @@ public class ServerCore {
 		checkEnchantmentOnDiskUsable(level);//checking but not using the value
 		HANDLING_ENCHANTMENT_ON_DISK = level.getServer().getTickCount();
 		if(serverData.getChunkProtection().onEnchantmentEffectOnBlockDisk(serverData, entity, level, actual, (int)effect.radius().calculate(enchantmentLevel))) {
-			ENCHANTMENT_EFFECT_BLOCKPOS.set(actual.getX(), level.getMaxBuildHeight(), actual.getZ());
+			ENCHANTMENT_EFFECT_BLOCKPOS.set(actual.getX(), level.getMaxY() + 1, actual.getZ());
 			return ENCHANTMENT_EFFECT_BLOCKPOS;//outside build limit, so won't build
 		}
 		return actual;
@@ -683,7 +695,7 @@ public class ServerCore {
 		if(serverData == null)
 			return false;
 		if(serverData.getChunkProtection().onNetherPortal(serverData, entity, serverLevel, entity.blockPosition())){
-			entity.level().getProfiler().pop();
+			Profiler.get().pop();
 			Reflection.setReflectFieldValue(entity, ENTITY_PORTAL_PROCESS_FIELD, null);
 			return true;
 		}
@@ -859,7 +871,7 @@ public class ServerCore {
 
 	public static boolean onMobItemPickup(ItemEntity itemEntity, Mob mob) {
 		if (OpenPartiesAndClaims.INSTANCE.getCommonEvents().onItemPickup(mob, itemEntity)) {
-			mob.level().getProfiler().pop();
+			Profiler.get().pop();
 			return true;
 		}
 		return false;

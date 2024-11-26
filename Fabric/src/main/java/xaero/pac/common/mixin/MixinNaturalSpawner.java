@@ -19,8 +19,8 @@
 package xaero.pac.common.mixin;
 
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.level.NaturalSpawner;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -34,7 +34,7 @@ public class MixinNaturalSpawner {
 	@Inject(method = "isValidPositionForMob", at = @At("RETURN"), cancellable = true)
 	private static void onIsValidPositionForMob(ServerLevel serverLevel, Mob mob, double d, CallbackInfoReturnable<Boolean> cir){
 		if(cir.getReturnValue())
-			cir.setReturnValue(!OpenPartiesAndClaims.INSTANCE.getCommonEvents().onMobSpawn(mob, mob.getX(), mob.getY(), mob.getZ(), MobSpawnType.NATURAL));
+			cir.setReturnValue(!OpenPartiesAndClaims.INSTANCE.getCommonEvents().onMobSpawn(mob, mob.getX(), mob.getY(), mob.getZ(), EntitySpawnReason.NATURAL));
 	}
 
 }
