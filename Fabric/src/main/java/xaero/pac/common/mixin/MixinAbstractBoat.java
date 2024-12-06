@@ -33,7 +33,7 @@ public class MixinAbstractBoat {
 
 	@ModifyVariable(method = "tick", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/world/level/Level;getEntities(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/AABB;Ljava/util/function/Predicate;)Ljava/util/List;"))
 	public List<Entity> onTickGetEntities(List<Entity> list){
-		ServerCore.onEntityAffectsEntities(list, (Boat)(Object)this);
+		ServerCore.onEntityAffectsEntities(list, (AbstractBoat)(Object)this);
 		return list;
 	}
 
